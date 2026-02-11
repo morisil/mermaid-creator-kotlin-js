@@ -17,12 +17,10 @@ plugins {
     alias(libs.plugins.xemantic.conventions)
 }
 
-// TODO change the group
-group = "com.xemantic.template"
+group = "com.xemantic.mermaid"
 
-// TODO fill up the details
 xemantic {
-    description = "A template repository for Xemantic's Kotlin multiplatform projects"
+    description = "A Kotlin JS library for creating Mermaid diagrams"
     inceptionYear = "2025"
     applyAllConventions()
 }
@@ -39,9 +37,6 @@ val javaTarget = libs.versions.javaTarget.get()
 val kotlinTarget = KotlinVersion.fromVersion(libs.versions.kotlinTarget.get())
 
 kotlin {
-
-    // TODO remove for a non-library project
-    explicitApi()
 
     compilerOptions {
         apiVersion = kotlinTarget
@@ -69,22 +64,16 @@ kotlin {
     js {
         browser()
         nodejs()
-        // TODO remove for a non-library project
-        binaries.library()
     }
 
     wasmJs {
         browser()
         nodejs()
         d8()
-        // TODO remove for a non-library project
-        binaries.library()
     }
 
     wasmWasi {
         nodejs()
-        // TODO remove for a non-library project
-        binaries.library()
     }
 
     // native, see https://kotlinlang.org/docs/native-target-support.html
@@ -146,19 +135,6 @@ tasks {
     named("tvosSimulatorArm64Test") { enabled = false }
     named("watchosSimulatorArm64Test") { enabled = false }
 }
-
-// TODO only relevant for private projects, public project snapshots are released to maven central
-//publishing {
-//    if (isPublishingToGitHub) {
-//        repositories {
-//            maven {
-//                name = "GitHubPackages"
-//                url = uri("https://maven.pkg.github.com/xemantic/xemantic-kotlin-core")
-//                credentials(PasswordCredentials::class)
-//            }
-//        }
-//    }
-//}
 
 powerAssert {
     functions = listOf(
