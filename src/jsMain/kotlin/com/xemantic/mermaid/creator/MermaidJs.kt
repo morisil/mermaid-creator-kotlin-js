@@ -16,25 +16,27 @@
 
 package com.xemantic.mermaid.creator
 
-import org.w3c.dom.svg.SVGElement
+import kotlinx.browser.window
+import kotlin.js.Promise
 
 /**
- * Data model representing a Mermaid diagram.
- *
- * @property code The Mermaid diagram definition code
- * @property svgElement The rendered SVG element (null if not rendered or error occurred)
- * @property error The error message if rendering failed
- * @property isRendering Whether the diagram is currently being rendered
+ * Access to the Mermaid.js library loaded from CDN.
  */
-public data class MermaidDiagram(
-  val code: String = "",
-  val svgElement: SVGElement? = null,
-  val error: String? = null,
-  val isRendering: Boolean = false
-) {
-  /**
-   * Whether the diagram has valid content.
-   */
-  val hasDiagram: Boolean
-    get() = code.isNotBlank()
+internal val mermaid: Mermaid
+  get() = window.asDynamic().mermaid as Mermaid
+
+/**
+ * External interface for Mermaid.js library.
+ */
+external interface Mermaid {
+  fun initialize(config: dynamic)
+  fun render(id: String, code: String): Promise<RenderResult>
+}
+
+/**
+ * Result of Mermaid rendering.
+ */
+external interface RenderResult {
+  val svg: String
+  val bindFunctions: dynamic
 }

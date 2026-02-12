@@ -22,17 +22,28 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 
 /**
+ * Default example diagram to show on first load.
+ */
+private const val DEFAULT_DIAGRAM = """graph TD
+    Start --> Stop"""
+
+/**
  * Main entry point for the Mermaid Creator application.
  *
  * Sets up the MVVM architecture by creating the ViewModel and View,
  * then renders the UI.
  */
 public fun main() {
+  // Initialize Mermaid.js
+  mermaid.initialize(
+    js("{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }")
+  )
+
   // Create application-level coroutine scope
   val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
   // Create ViewModel
-  val viewModel = MermaidViewModel()
+  val viewModel = MermaidViewModel(appScope)
 
   // Create and attach view to DOM
   val view = mermaidCreatorView(viewModel, appScope)
@@ -40,6 +51,9 @@ public fun main() {
   val rootElement = document.getElementById("root")
   if (rootElement != null) {
     rootElement.appendChild(view)
+
+    // Load default example diagram
+    viewModel.updateCode(DEFAULT_DIAGRAM)
   } else {
     console.error("Root element not found. Make sure your HTML contains an element with id='root'.")
   }

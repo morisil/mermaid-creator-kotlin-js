@@ -19,12 +19,16 @@ package com.xemantic.mermaid.creator
 import com.xemantic.kotlin.js.dom.html.*
 import com.xemantic.kotlin.js.dom.node
 import kotlinx.browser.document
+import kotlinx.browser.window
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 import org.w3c.dom.HTMLDivElement
-import org.w3c.dom.HTMLPreElement
+import org.w3c.dom.HTMLInputElement
 import org.w3c.dom.HTMLTextAreaElement
+import org.w3c.files.FileReader
+import org.w3c.files.get
 
 /**
  * Creates the Mermaid diagram creator view.
@@ -51,11 +55,108 @@ public fun mermaidCreatorView(
 
       div("export-buttons") {
 
+        // File input (hidden)
+        val fileInput: HTMLInputElement = input(
+          type = "file"
+        ) { input ->
+          input.accept = ".mmd,.txt,.md"
+          input.style.display = "none"
+          input.onchange = {
+            val file = input.files?.get(0)
+            if (file != null) {
+              val reader = FileReader()
+              reader.onload = {
+                val content = reader.result as String
+                viewModel.loadFromFile(content)
+              }
+              reader.readAsText(file)
+            }
+          }
+        }
+
+        // Load File button
+        input(type = "button", value = "Load File") { button ->
+          button.onclick = {
+            fileInput.click()
+          }
+        }
+
+        // Export SVG button
+        val exportSvgButton: HTMLInputElement = input(
+          type = "button",
+          value = "Export SVG"
+        ) { button ->
+          button.disabled = true
+          button.onclick = {
+            val diagram = viewModel.diagram.value
+            diagram.svgElement?.let { svg ->
+              exportSvg(svg)
+            } ?: run {
+              window.alert("No diagram to export. Check syntax.")
+            }
+          }
+        }
+
+        // Export PNG button
+        val exportPngButton: HTMLInputElement = input(
+          type = "button",
+          value = "Export PNG"
+        ) { button ->
+          button.disabled = true
+          button.onclick = {
+            val diagram = viewModel.diagram.value
+            diagram.svgElement?.let { svg ->
+              scope.launch {
+                try {
+                  button.value = "Exporting..."
+                  button.disabled = true
+                  exportPng(svg)
+                } catch (e: Throwable) {
+                  window.alert("Failed to export PNG: ${e.message}")
+                } finally {
+                  button.value = "Export PNG"
+                  button.disabled = false
+                }
+              }
+            } ?: run {
+              window.alert("No diagram to export. Check syntax.")
+            }
+          }
+        }
+
+        // Save .mmd button
+        val saveMmdButton: HTMLInputElement = input(
+          type = "button",
+          value = "Save .mmd",
+          klass = "secondary"
+        ) { button ->
+          button.disabled = true
+          button.onclick = {
+            val code = viewModel.diagram.value.code
+            if (code.isNotBlank()) {
+              exportMmd(code)
+            } else {
+              window.alert("No diagram code to save.")
+            }
+          }
+        }
+
+        // Clear button
         input(type = "button", value = "Clear") { button ->
           button.onclick = {
             viewModel.clear()
           }
         }
+
+        // Update button states based on diagram
+        viewModel.diagram.onEach { diagram ->
+          val hasValidDiagram = diagram.svgElement != null
+          val hasCode = diagram.code.isNotBlank()
+
+          exportSvgButton.disabled = !hasValidDiagram
+          exportPngButton.disabled = !hasValidDiagram || diagram.isRendering
+          saveMmdButton.disabled = !hasCode
+        }.launchIn(scope)
 
       }
 
@@ -96,23 +197,38 @@ public fun mermaidCreatorView(
 
         val preview: HTMLDivElement = div("mermaid-preview") {}
 
-        // Bind ViewModel diagram code to preview
+        // Bind ViewModel diagram state to preview
         viewModel.diagram.onEach { diagram ->
-          // Placeholder for Mermaid rendering
-          // In a real implementation, this would use the Mermaid.js library
           // Clear existing content
           while (preview.firstChild != null) {
             preview.removeChild(preview.firstChild!!)
           }
 
-          if (diagram.code.isNotBlank()) {
-            val pre = document.createElement("pre") as HTMLPreElement
-            pre.textContent = diagram.code
-            preview.appendChild(pre)
-          } else {
-            val p = document.createElement("p")
-            p.textContent = "No diagram to display"
-            preview.appendChild(p)
+          when {
+            diagram.isRendering -> {
+              val p = document.createElement("p")
+              p.textContent = "Rendering diagram..."
+              preview.appendChild(p)
+            }
+
+            diagram.error != null -> {
+              val errorDiv = document.createElement("div")
+              errorDiv.className = "error-message"
+              errorDiv.textContent = "Error: ${diagram.error}"
+              preview.appendChild(errorDiv)
+            }
+
+            diagram.svgElement != null -> {
+              // Clone and append the SVG element
+              val clonedSvg = diagram.svgElement.cloneNode(deep = true)
+              preview.appendChild(clonedSvg)
+            }
+
+            diagram.code.isBlank() -> {
+              val p = document.createElement("p")
+              p.textContent = "No diagram to display"
+              preview.appendChild(p)
+            }
           }
         }.launchIn(scope)
 
