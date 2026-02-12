@@ -14,14 +14,29 @@
  * limitations under the License.
  */
 
-// TODO replace with your package
-package com.xemantic.template.kotlin.multiplatform
+package com.xemantic.mermaid.creator
 
-// TODO replace with your code
-public object Foo {
-    public const val BAR: String = "buzz"
+import kotlinx.browser.window
+import kotlin.js.Promise
+
+/**
+ * Access to the Mermaid.js library loaded from CDN.
+ */
+internal val mermaid: Mermaid
+  get() = window.asDynamic().mermaid as Mermaid
+
+/**
+ * External interface for Mermaid.js library.
+ */
+external interface Mermaid {
+  fun initialize(config: dynamic)
+  fun render(id: String, code: String): Promise<RenderResult>
 }
 
-public fun main() {
-    print("Hello World!")
+/**
+ * Result of Mermaid rendering.
+ */
+external interface RenderResult {
+  val svg: String
+  val bindFunctions: dynamic
 }

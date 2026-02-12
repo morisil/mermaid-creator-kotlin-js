@@ -40,7 +40,8 @@ kotlin {
         languageVersion = kotlinTarget
         freeCompilerArgs.addAll(
             "-Xcontext-parameters",
-            "-Xcontext-sensitive-resolution"
+            "-Xcontext-sensitive-resolution",
+            "-Xskip-prerelease-check"
         )
         extraWarnings = true
         progressiveMode = true
@@ -52,6 +53,12 @@ kotlin {
     }
 
     sourceSets {
+
+        jsMain {
+            dependencies {
+                implementation(libs.xemantic.kotlin.js)
+            }
+        }
 
         commonTest {
             dependencies {
