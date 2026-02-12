@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
-// TODO replace with your package
-package com.xemantic.template.kotlin.multiplatform
+package com.xemantic.mermaid.creator
 
-// TODO replace with your code
-public object Foo {
-    public const val BAR: String = "buzz"
-}
-
-public fun main() {
-    print("Hello World!")
-}
+/**
+ * Data model representing a Mermaid diagram.
+ *
+ * @property code The Mermaid diagram definition code
+ * @property hasDiagram Whether the diagram has valid content
+ */
+public data class MermaidDiagram(
+  val code: String = "",
+  val hasDiagram: Boolean = false
+)
