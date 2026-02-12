@@ -1,70 +1,34 @@
-# xemantic-project-template
+# mermaid-creator-kotlin-js
 
-A template repository for Xemantic's Kotlin multiplatform projects
+A Kotlin JS library for creating Mermaid diagrams
 
-[//]: # (TODO replace title and description)
+[<img alt="Maven Central Version" src="https://img.shields.io/maven-central/v/com.xemantic.mermaid/mermaid-creator-kotlin-js">](https://central.sonatype.com/artifact/com.xemantic.mermaid/mermaid-creator-kotlin-js)
+[<img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/morisil/mermaid-creator-kotlin-js">](https://github.com/morisil/mermaid-creator-kotlin-js/releases)
+[<img alt="license" src="https://img.shields.io/github/license/morisil/mermaid-creator-kotlin-js?color=blue">](https://github.com/morisil/mermaid-creator-kotlin-js/blob/main/LICENSE)
 
-[//]: # (TODO for the shileds below, replace com.xemantic.template group and xemantic-project-template artifactId)
+[<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/morisil/mermaid-creator-kotlin-js/build-main.yml">](https://github.com/morisil/mermaid-creator-kotlin-js/actions/workflows/build-main.yml)
+[<img alt="GitHub branch check runs" src="https://img.shields.io/github/check-runs/morisil/mermaid-creator-kotlin-js/main">](https://github.com/morisil/mermaid-creator-kotlin-js/actions/workflows/build-main.yml)
+[<img alt="GitHub commits since latest release" src="https://img.shields.io/github/commits-since/morisil/mermaid-creator-kotlin-js/latest">](https://github.com/morisil/mermaid-creator-kotlin-js/commits/main/)
+[<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/morisil/mermaid-creator-kotlin-js">](https://github.com/morisil/mermaid-creator-kotlin-js/commits/main/)
 
-[<img alt="Maven Central Version" src="https://img.shields.io/maven-central/v/com.xemantic.template/xemantic-project-template">](https://central.sonatype.com/artifact/com.xemantic.template/xemantic-project-template)
-[<img alt="GitHub Release Date" src="https://img.shields.io/github/release-date/xemantic/xemantic-project-template">](https://github.com/xemantic/xemantic-project-template/releases)
-[<img alt="license" src="https://img.shields.io/github/license/xemantic/xemantic-project-template?color=blue">](https://github.com/xemantic/xemantic-project-template/blob/main/LICENSE)
-
-[<img alt="GitHub Actions Workflow Status" src="https://img.shields.io/github/actions/workflow/status/xemantic/xemantic-project-template/build-main.yml">](https://github.com/xemantic/xemantic-project-template/actions/workflows/build-main.yml)
-[<img alt="GitHub branch check runs" src="https://img.shields.io/github/check-runs/xemantic/xemantic-project-template/main">](https://github.com/xemantic/xemantic-project-template/actions/workflows/build-main.yml)
-[<img alt="GitHub commits since latest release" src="https://img.shields.io/github/commits-since/xemantic/xemantic-project-template/latest">](https://github.com/xemantic/xemantic-project-template/commits/main/)
-[<img alt="GitHub last commit" src="https://img.shields.io/github/last-commit/xemantic/xemantic-project-template">](https://github.com/xemantic/xemantic-project-template/commits/main/)
-
-[<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/xemantic/xemantic-project-template">](https://github.com/xemantic/xemantic-project-template/graphs/contributors)
-[<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/xemantic/xemantic-project-template">](https://github.com/xemantic/xemantic-project-template/commits/main/)
-[<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/xemantic/xemantic-project-template">]()
-[<img alt="GitHub Created At" src="https://img.shields.io/github/created-at/xemantic/xemantic-project-template">](https://github.com/xemantic/xemantic-project-template/commits)
-[<img alt="kotlin version" src="https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fxemantic%2Fxemantic-project-template%2Fmain%2Fgradle%2Flibs.versions.toml&query=versions.kotlin&label=kotlin">](https://kotlinlang.org/docs/releases.html)
+[<img alt="GitHub contributors" src="https://img.shields.io/github/contributors/morisil/mermaid-creator-kotlin-js">](https://github.com/morisil/mermaid-creator-kotlin-js/graphs/contributors)
+[<img alt="GitHub commit activity" src="https://img.shields.io/github/commit-activity/t/morisil/mermaid-creator-kotlin-js">](https://github.com/morisil/mermaid-creator-kotlin-js/commits/main/)
+[<img alt="GitHub code size in bytes" src="https://img.shields.io/github/languages/code-size/morisil/mermaid-creator-kotlin-js">]()
+[<img alt="GitHub Created At" src="https://img.shields.io/github/created-at/morisil/mermaid-creator-kotlin-js">](https://github.com/morisil/mermaid-creator-kotlin-js/commits)
+[<img alt="kotlin version" src="https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fmorisil%2Fmermaid-creator-kotlin-js%2Fmain%2Fgradle%2Flibs.versions.toml&query=versions.kotlin&label=kotlin">](https://kotlinlang.org/docs/releases.html)
 [<img alt="discord users online" src="https://img.shields.io/discord/811561179280965673">](https://discord.gg/vQktqqN2Vn)
 [![Bluesky](https://img.shields.io/badge/Bluesky-0285FF?logo=bluesky&logoColor=fff)](https://bsky.app/profile/xemantic.com)
 
 ## Why?
 
-Creating new gradle projects, with all the conventions we are using at [Xemantic](https://xemantic.com), might be a hassle.
-
-[//]: # (TODO replace with the rationale behind the new project)
-
-[//]: # (TODO everything starting from here can be removed in your project)
+TODO: Add the rationale behind this project
 
 ## Usage
-
-> [!NOTE]
-> There is no value in using this project directly as a dependency, however the usage section is included, so you can replace it with your project dependency:
 
 In `build.gradle.kts` add:
 
 ```kotlin
 dependencies {
-    implementation("com.xemantic.template:xemantic-project-template:0.1.0")
+    implementation("com.xemantic.mermaid:mermaid-creator-kotlin-js:0.1.0")
 }
-```
-
-## How?
-
-1. When creating new GitHub project choose this repository as a template
-2. Follow the [CHECKLIST](CHECKLIST.md)
-
-## Updating this template project
-
-From time to time, it is worth to:
-
-### Update gradlew wrapper
-
-```shell
-./gradlew wrapper --gradle-version 9.2.0 --distribution-type bin
-```
-
-### Update all the dependencies to the latest versions
-
-All the gradle dependencies are managed by the [libs.versions.toml](gradle/libs.versions.toml) file in the `gradle` dir.
-
-It is easy to check for the latest version by running:
-
-```shell
-./gradlew dependencyUpdates --no-parallel
 ```
