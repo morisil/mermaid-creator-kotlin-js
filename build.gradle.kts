@@ -1,4 +1,7 @@
-@file:OptIn(ExperimentalKotlinGradlePluginApi::class)
+@file:OptIn(
+    ExperimentalKotlinGradlePluginApi::class,
+    org.jetbrains.kotlin.gradle.targets.js.dsl.ExperimentalDistributionDsl::class
+)
 
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
@@ -49,7 +52,15 @@ kotlin {
     }
 
     js {
-        browser()
+        browser {
+            webpackTask {
+                mainOutputFileName = "mermaid-creator-kotlin-js.js"
+            }
+            distribution {
+                outputDirectory = layout.buildDirectory.dir("dist").get().asFile
+            }
+        }
+        binaries.executable()
     }
 
     sourceSets {
