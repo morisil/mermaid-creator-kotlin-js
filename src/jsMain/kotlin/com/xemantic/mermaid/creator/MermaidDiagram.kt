@@ -20,9 +20,13 @@ package com.xemantic.mermaid.creator
  * Data model representing a Mermaid diagram.
  *
  * @property code The Mermaid diagram definition code
- * @property hasDiagram Whether the diagram has valid content
  */
 public data class MermaidDiagram(
-  val code: String = "",
-  val hasDiagram: Boolean = false
-)
+  val code: String = ""
+) {
+  /**
+   * Whether the diagram has valid content.
+   */
+  val hasDiagram: Boolean
+    get() = code.isNotBlank()
+}

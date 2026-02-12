@@ -32,10 +32,15 @@ public fun main() {
   val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
   // Create ViewModel
-  val viewModel = MermaidViewModel(appScope)
+  val viewModel = MermaidViewModel()
 
   // Create and attach view to DOM
   val view = mermaidCreatorView(viewModel, appScope)
 
-  document.getElementById("root")?.appendChild(view)
+  val rootElement = document.getElementById("root")
+  if (rootElement != null) {
+    rootElement.appendChild(view)
+  } else {
+    console.error("Root element not found. Make sure your HTML contains an element with id='root'.")
+  }
 }

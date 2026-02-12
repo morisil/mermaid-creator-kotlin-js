@@ -16,7 +16,6 @@
 
 package com.xemantic.mermaid.creator
 
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -27,14 +26,15 @@ import kotlinx.coroutines.flow.update
  *
  * Implements MVVM pattern by exposing reactive state through StateFlow
  * and providing methods to update the diagram.
- *
- * @property scope The coroutine scope for managing asynchronous operations
  */
-public class MermaidViewModel(
-  private val scope: CoroutineScope
-) {
+public class MermaidViewModel {
 
   private val _diagram = MutableStateFlow(MermaidDiagram())
+
+  /**
+   * Maximum allowed length for diagram code to prevent performance issues.
+   */
+  private val maxCodeLength = 100_000
 
   /**
    * Observable state flow of the current diagram.
@@ -44,24 +44,22 @@ public class MermaidViewModel(
   /**
    * Updates the Mermaid diagram code.
    *
+   * Validates that the code length doesn't exceed the maximum allowed length.
+   *
    * @param code The new Mermaid diagram definition
    */
   public fun updateCode(code: String) {
-    _diagram.update { current ->
-      current.copy(
-        code = code,
-        hasDiagram = code.isNotBlank()
-      )
+    // Validate code length to prevent performance issues
+    val validatedCode = if (code.length > maxCodeLength) {
+      console.warn("Diagram code exceeds maximum length of $maxCodeLength characters. Truncating.")
+      code.take(maxCodeLength)
+    } else {
+      code
     }
-  }
 
-  /**
-   * Loads diagram code from a file content.
-   *
-   * @param content The file content containing Mermaid diagram definition
-   */
-  public fun loadFromFile(content: String) {
-    updateCode(content)
+    _diagram.update { current ->
+      current.copy(code = validatedCode)
+    }
   }
 
   /**

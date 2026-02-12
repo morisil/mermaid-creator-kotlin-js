@@ -18,10 +18,12 @@ package com.xemantic.mermaid.creator
 
 import com.xemantic.kotlin.js.dom.html.*
 import com.xemantic.kotlin.js.dom.node
+import kotlinx.browser.document
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import org.w3c.dom.HTMLDivElement
+import org.w3c.dom.HTMLPreElement
 import org.w3c.dom.HTMLTextAreaElement
 
 /**
@@ -48,13 +50,6 @@ public fun mermaidCreatorView(
       }
 
       div("export-buttons") {
-
-        input(type = "button", value = "Load File") { button ->
-          button.onclick = {
-            // Placeholder for file loading
-            console.log("File load functionality to be implemented")
-          }
-        }
 
         input(type = "button", value = "Clear") { button ->
           button.onclick = {
@@ -84,8 +79,11 @@ public fun mermaidCreatorView(
         }
 
         // Bind ViewModel diagram code to editor
+        // Guard against unnecessary updates to prevent cursor jumps
         viewModel.diagram.onEach { diagram ->
-          editor.value = diagram.code
+          if (editor.value != diagram.code) {
+            editor.value = diagram.code
+          }
         }.launchIn(scope)
 
       }
@@ -102,10 +100,19 @@ public fun mermaidCreatorView(
         viewModel.diagram.onEach { diagram ->
           // Placeholder for Mermaid rendering
           // In a real implementation, this would use the Mermaid.js library
-          preview.innerHTML = if (diagram.code.isNotBlank()) {
-            "<pre>${diagram.code}</pre>"
+          // Clear existing content
+          while (preview.firstChild != null) {
+            preview.removeChild(preview.firstChild!!)
+          }
+
+          if (diagram.code.isNotBlank()) {
+            val pre = document.createElement("pre") as HTMLPreElement
+            pre.textContent = diagram.code
+            preview.appendChild(pre)
           } else {
-            "<p>No diagram to display</p>"
+            val p = document.createElement("p")
+            p.textContent = "No diagram to display"
+            preview.appendChild(p)
           }
         }.launchIn(scope)
 
