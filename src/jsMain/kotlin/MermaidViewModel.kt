@@ -29,8 +29,12 @@ import kotlin.js.Date
  *
  * Implements MVVM pattern by exposing reactive state through StateFlow
  * and providing methods to update the diagram.
+ *
+ * @param notifier The notifier used to display messages to the user
  */
-class MermaidViewModel {
+class MermaidViewModel(
+    private val notifier: Notifier
+) {
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -54,6 +58,12 @@ class MermaidViewModel {
      */
     val diagram: StateFlow<MermaidDiagram>
         field = MutableStateFlow(MermaidDiagram())
+
+    /**
+     * Whether a PNG export is currently in progress.
+     */
+    val isExportingPng: StateFlow<Boolean>
+        field = MutableStateFlow(false)
 
     /**
      * Updates the Mermaid diagram code.
@@ -122,6 +132,53 @@ class MermaidViewModel {
                     isRendering = false
                 )
             }
+        }
+    }
+
+    /**
+     * Exports the current diagram as an SVG file.
+     */
+    fun exportSvg() {
+        val svg = diagram.value.svgElement
+        if (svg != null) {
+            exportSvg(svg)
+        } else {
+            notifier.notify("No diagram to export. Check syntax.")
+        }
+    }
+
+    /**
+     * Exports the current diagram as a PNG file.
+     *
+     * Manages the exporting state to disable the button and show progress.
+     */
+    fun exportPng() {
+        val svg = diagram.value.svgElement
+        if (svg != null) {
+            scope.launch {
+                try {
+                    isExportingPng.value = true
+                    exportPng(svg)
+                } catch (e: Throwable) {
+                    notifier.notify("Failed to export PNG: ${e.message}")
+                } finally {
+                    isExportingPng.value = false
+                }
+            }
+        } else {
+            notifier.notify("No diagram to export. Check syntax.")
+        }
+    }
+
+    /**
+     * Saves the current diagram code as a .mmd file.
+     */
+    fun saveMmd() {
+        val code = diagram.value.code
+        if (code.isNotBlank()) {
+            exportMmd(code)
+        } else {
+            notifier.notify("No diagram code to save.")
         }
     }
 

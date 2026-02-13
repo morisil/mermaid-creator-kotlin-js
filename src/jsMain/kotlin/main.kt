@@ -18,6 +18,7 @@ package com.xemantic.mermaid.creator
 
 import com.xemantic.kotlin.js.dom.invoke
 import kotlinx.browser.document
+import kotlinx.browser.window
 import org.intellij.lang.annotations.Language
 
 /**
@@ -39,7 +40,9 @@ fun main() {
     mermaid.initialize(
         js("{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }")
     )
-    val viewModel = MermaidViewModel()
+    val viewModel = MermaidViewModel(
+        notifier = { message -> window.alert(message) }
+    )
     val view = mermaidCreatorView(viewModel)
     document.body!! {
         +view

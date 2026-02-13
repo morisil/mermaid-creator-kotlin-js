@@ -52,6 +52,10 @@ kotlin {
     js {
         browser()
         binaries.executable()
+        useEsModules()
+        compilerOptions {
+            target = "es2015"
+        }
     }
 
     sourceSets {
