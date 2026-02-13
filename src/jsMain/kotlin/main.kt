@@ -16,16 +16,18 @@
 
 package com.xemantic.mermaid.creator
 
+import com.xemantic.kotlin.js.dom.invoke
 import kotlinx.browser.document
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import org.intellij.lang.annotations.Language
 
 /**
  * Default example diagram to show on first load.
  */
-private const val DEFAULT_DIAGRAM = """graph TD
-    Start --> Stop"""
+@Language("mermaid")
+private val DEFAULT_DIAGRAM = """
+graph TD
+Start --> Stop
+""".trimIndent()
 
 /**
  * Main entry point for the Mermaid Creator application.
@@ -33,28 +35,14 @@ private const val DEFAULT_DIAGRAM = """graph TD
  * Sets up the MVVM architecture by creating the ViewModel and View,
  * then renders the UI.
  */
-public fun main() {
-  // Initialize Mermaid.js
-  mermaid.initialize(
-    js("{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }")
-  )
-
-  // Create application-level coroutine scope
-  val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-  // Create ViewModel
-  val viewModel = MermaidViewModel(appScope)
-
-  // Create and attach view to DOM
-  val view = mermaidCreatorView(viewModel, appScope)
-
-  val rootElement = document.getElementById("root")
-  if (rootElement != null) {
-    rootElement.appendChild(view)
-
-    // Load default example diagram
+fun main() {
+    mermaid.initialize(
+        js("{ startOnLoad: false, theme: 'neutral', securityLevel: 'loose' }")
+    )
+    val viewModel = MermaidViewModel()
+    val view = mermaidCreatorView(viewModel)
+    document.body!! {
+        +view
+    }
     viewModel.updateCode(DEFAULT_DIAGRAM)
-  } else {
-    console.error("Root element not found. Make sure your HTML contains an element with id='root'.")
-  }
 }

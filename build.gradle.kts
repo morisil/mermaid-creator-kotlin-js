@@ -41,7 +41,8 @@ kotlin {
         freeCompilerArgs.addAll(
             "-Xcontext-parameters",
             "-Xcontext-sensitive-resolution",
-            "-Xskip-prerelease-check"
+            "-Xskip-prerelease-check",
+            "-Xexplicit-backing-fields"
         )
         extraWarnings = true
         progressiveMode = true
@@ -50,13 +51,14 @@ kotlin {
 
     js {
         browser()
+        binaries.executable()
     }
 
     sourceSets {
 
-        jsMain {
+        commonMain {
             dependencies {
-                implementation(libs.xemantic.kotlin.js)
+                implementation(libs.jetbrains.annotations)
             }
         }
 
@@ -64,6 +66,13 @@ kotlin {
             dependencies {
                 implementation(libs.kotlin.test)
                 implementation(libs.xemantic.kotlin.test)
+            }
+        }
+
+        jsMain {
+            dependencies {
+                implementation(libs.xemantic.kotlin.js)
+                implementation(npm("mermaid", libs.versions.mermaid.get()))
             }
         }
 

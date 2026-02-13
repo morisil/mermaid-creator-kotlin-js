@@ -26,15 +26,15 @@ import org.w3c.dom.svg.SVGElement
  * @property error The error message if rendering failed
  * @property isRendering Whether the diagram is currently being rendered
  */
-public data class MermaidDiagram(
-  val code: String = "",
-  val svgElement: SVGElement? = null,
-  val error: String? = null,
-  val isRendering: Boolean = false
+data class MermaidDiagram(
+    val code: String = "",
+    val svgElement: SVGElement? = null,
+    val error: String? = null,
+    val isRendering: Boolean = false
 ) {
-  /**
-   * Whether the diagram has valid content.
-   */
-  val hasDiagram: Boolean
-    get() = code.isNotBlank()
+    /**
+     * Whether the diagram has valid content.
+     */
+    val hasDiagram: Boolean
+        get() = code.isNotBlank()
 }

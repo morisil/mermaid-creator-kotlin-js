@@ -16,27 +16,35 @@
 
 package com.xemantic.mermaid.creator
 
-import kotlinx.browser.window
 import kotlin.js.Promise
 
 /**
- * Access to the Mermaid.js library loaded from CDN.
+ * Mermaid.js module imported as an npm/webpack dependency.
  */
-internal val mermaid: Mermaid
-  get() = window.asDynamic().mermaid as Mermaid
+@JsModule("mermaid")
+@JsNonModule
+external object MermaidModule {
+    @JsName("default")
+    val mermaid: Mermaid
+}
+
+/**
+ * Access to the Mermaid.js API.
+ */
+internal val mermaid: Mermaid get() = MermaidModule.mermaid
 
 /**
  * External interface for Mermaid.js library.
  */
 external interface Mermaid {
-  fun initialize(config: dynamic)
-  fun render(id: String, code: String): Promise<RenderResult>
+    fun initialize(config: dynamic)
+    fun render(id: String, code: String): Promise<RenderResult>
 }
 
 /**
  * Result of Mermaid rendering.
  */
 external interface RenderResult {
-  val svg: String
-  val bindFunctions: dynamic
+    val svg: String
+    val bindFunctions: dynamic
 }
