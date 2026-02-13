@@ -28,7 +28,7 @@ jobs:
           distribution: temurin
           java-version: 21
       - uses: gradle/actions/setup-gradle@v4
-      - run: ./gradlew jsBrowserProductionWebpack
+      - run: ./gradlew jsBrowserDistribution
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
