@@ -19,6 +19,7 @@ package com.xemantic.mermaid.creator
 import com.xemantic.kotlin.js.dom.html.a
 import com.xemantic.kotlin.js.dom.node
 import kotlinx.browser.document
+import kotlinx.coroutines.suspendCancellableCoroutine
 import org.w3c.dom.*
 import org.w3c.dom.svg.SVGElement
 import org.w3c.dom.url.URL
@@ -26,7 +27,6 @@ import org.w3c.files.Blob
 import org.w3c.files.BlobPropertyBag
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
-import kotlin.coroutines.suspendCoroutine
 
 /**
  * External interface for XMLSerializer.
@@ -88,7 +88,7 @@ suspend fun exportPng(svgElement: SVGElement, filename: String = "diagram.png") 
         val url = URL.createObjectURL(svgBlob)
 
         // Wait for image to load
-        suspendCoroutine { continuation ->
+        suspendCancellableCoroutine { continuation ->
             img.onload = {
                 URL.revokeObjectURL(url)
                 continuation.resume(Unit)
@@ -118,7 +118,7 @@ suspend fun exportPng(svgElement: SVGElement, filename: String = "diagram.png") 
         ctx.drawImage(img, 0.0, 0.0, width.toDouble(), height.toDouble())
 
         // Convert canvas to blob and download
-        suspendCoroutine<Unit> { continuation ->
+        suspendCancellableCoroutine<Unit> { continuation ->
             canvas.toBlob({ blob: Blob? ->
                 if (blob != null) {
                     triggerDownload(blob, filename)
