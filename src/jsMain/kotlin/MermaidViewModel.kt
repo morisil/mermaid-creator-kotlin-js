@@ -17,18 +17,45 @@
 package com.xemantic.mermaid.creator
 
 import kotlinx.coroutines.*
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import org.w3c.dom.parsing.DOMParser
 import org.w3c.dom.svg.SVGElement
 import kotlin.js.Date
 
 /**
+ * Represents the state of the diagram preview panel.
+ */
+sealed interface PreviewState {
+
+    /**
+     * A status message to display.
+     *
+     * @property text The message text.
+     */
+    data class Message(val text: String) : PreviewState
+
+    /**
+     * Rendering failed with an error.
+     *
+     * @property message The error message.
+     */
+    data class Error(val message: String) : PreviewState
+
+    /**
+     * The diagram has been successfully rendered.
+     *
+     * @property svgElement The rendered SVG element.
+     */
+    data class Diagram(val svgElement: SVGElement) : PreviewState
+
+}
+
+/**
  * ViewModel for managing Mermaid diagram state.
  *
- * Implements MVVM pattern by exposing reactive state through StateFlow
- * and providing methods to update the diagram.
+ * Implements MVVM pattern by exposing reactive state through individual StateFlows
+ * and providing methods to update the diagram. Derived flows encapsulate UI decisions
+ * so the View can bind directly without logic.
  *
  * @param notifier The notifier used to display messages to the user
  */
@@ -38,32 +65,64 @@ class MermaidViewModel(
 
     val scope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    /**
-     * Maximum allowed length for diagram code to prevent performance issues.
-     */
     private val maxCodeLength = 100_000
-
-    /**
-     * Debounce delay for rendering in milliseconds.
-     */
     private val debounceDelayMs = 300L
-
-    /**
-     * Job for debounced rendering.
-     */
     private var renderJob: Job? = null
 
     /**
-     * Observable state flow of the current diagram.
+     * The Mermaid diagram definition code.
      */
-    val diagram: StateFlow<MermaidDiagram>
-        field = MutableStateFlow(MermaidDiagram())
+    val code: StateFlow<String>
+        field = MutableStateFlow("")
+
+    private val svgElement = MutableStateFlow<SVGElement?>(null)
+    private val error = MutableStateFlow<String?>(null)
+    private val isRendering = MutableStateFlow(false)
+    private val isExportingPng = MutableStateFlow(false)
 
     /**
-     * Whether a PNG export is currently in progress.
+     * Whether the Export SVG button should be enabled.
      */
-    val isExportingPng: StateFlow<Boolean>
-        field = MutableStateFlow(false)
+    val exportSvgEnabled: StateFlow<Boolean> = svgElement
+        .map { it != null }
+        .stateIn(scope, SharingStarted.Eagerly, false)
+
+    /**
+     * Whether the Export PNG button should be enabled.
+     */
+    val exportPngEnabled: StateFlow<Boolean> = combine(
+        svgElement, isRendering, isExportingPng
+    ) { svg, rendering, exporting ->
+        svg != null && !rendering && !exporting
+    }.stateIn(scope, SharingStarted.Eagerly, false)
+
+    /**
+     * The label for the Export PNG button.
+     */
+    val exportPngLabel: StateFlow<String> = isExportingPng
+        .map { if (it) "Exporting..." else "Export PNG" }
+        .stateIn(scope, SharingStarted.Eagerly, "Export PNG")
+
+    /**
+     * Whether the Save .mmd button should be enabled.
+     */
+    val saveMmdEnabled: StateFlow<Boolean> = code
+        .map { it.isNotBlank() }
+        .stateIn(scope, SharingStarted.Eagerly, false)
+
+    /**
+     * The current state of the diagram preview panel.
+     */
+    val previewState: StateFlow<PreviewState> = combine(
+        isRendering, error, svgElement, code
+    ) { rendering, err, svg, _ ->
+        when {
+            rendering -> PreviewState.Message("Rendering diagram...")
+            err != null -> PreviewState.Error(err)
+            svg != null -> PreviewState.Diagram(svg.cloneNode(deep = true) as SVGElement)
+            else -> PreviewState.Message("No diagram to display")
+        }
+    }.stateIn(scope, SharingStarted.Eagerly, PreviewState.Message("No diagram to display"))
 
     /**
      * Updates the Mermaid diagram code.
@@ -74,7 +133,6 @@ class MermaidViewModel(
      * @param code The new Mermaid diagram definition
      */
     fun updateCode(code: String) {
-        // Validate code length to prevent performance issues
         val validatedCode = if (code.length > maxCodeLength) {
             console.warn("Diagram code exceeds maximum length of $maxCodeLength characters. Truncating.")
             code.take(maxCodeLength)
@@ -82,11 +140,10 @@ class MermaidViewModel(
             code
         }
 
-        diagram.update { current ->
-            current.copy(code = validatedCode, svgElement = null, error = null)
-        }
+        this.code.value = validatedCode
+        svgElement.value = null
+        error.value = null
 
-        // Debounce rendering
         renderJob?.cancel()
         renderJob = scope.launch {
             delay(debounceDelayMs)
@@ -98,40 +155,34 @@ class MermaidViewModel(
      * Renders the current diagram using Mermaid.js.
      */
     private suspend fun renderDiagram() {
-        val currentCode = diagram.value.code
+        val currentCode = code.value
 
         if (currentCode.isBlank()) {
-            diagram.update { it.copy(svgElement = null, error = null, isRendering = false) }
+            svgElement.value = null
+            error.value = null
+            isRendering.value = false
             return
         }
 
-        diagram.update { it.copy(isRendering = true, error = null) }
+        isRendering.value = true
+        error.value = null
 
         try {
             val id = "mermaid-${Date.now().toLong()}"
             val result = mermaid.render(id, currentCode).await()
 
-            // Parse SVG string to SVGElement
             val parser = DOMParser()
             val svgDoc = parser.parseFromString(result.svg, "image/svg+xml")
-            val svgElement = svgDoc.documentElement as? SVGElement
+            val svg = svgDoc.documentElement as? SVGElement
 
-            diagram.update { current ->
-                current.copy(
-                    svgElement = svgElement,
-                    error = null,
-                    isRendering = false
-                )
-            }
+            svgElement.value = svg
+            error.value = null
+            isRendering.value = false
         } catch (e: Throwable) {
             console.error("Failed to render diagram:", e)
-            diagram.update { current ->
-                current.copy(
-                    svgElement = null,
-                    error = e.message ?: "Failed to render diagram",
-                    isRendering = false
-                )
-            }
+            svgElement.value = null
+            error.value = e.message ?: "Failed to render diagram"
+            isRendering.value = false
         }
     }
 
@@ -139,7 +190,7 @@ class MermaidViewModel(
      * Exports the current diagram as an SVG file.
      */
     fun exportSvg() {
-        val svg = diagram.value.svgElement
+        val svg = svgElement.value
         if (svg != null) {
             exportSvg(svg)
         } else {
@@ -153,7 +204,7 @@ class MermaidViewModel(
      * Manages the exporting state to disable the button and show progress.
      */
     fun exportPng() {
-        val svg = diagram.value.svgElement
+        val svg = svgElement.value
         if (svg != null) {
             scope.launch {
                 try {
@@ -174,9 +225,9 @@ class MermaidViewModel(
      * Saves the current diagram code as a .mmd file.
      */
     fun saveMmd() {
-        val code = diagram.value.code
-        if (code.isNotBlank()) {
-            exportMmd(code)
+        val currentCode = code.value
+        if (currentCode.isNotBlank()) {
+            exportMmd(currentCode)
         } else {
             notifier.notify("No diagram code to save.")
         }
@@ -194,7 +245,10 @@ class MermaidViewModel(
      */
     fun clear() {
         renderJob?.cancel()
-        diagram.value = MermaidDiagram()
+        code.value = ""
+        svgElement.value = null
+        error.value = null
+        isRendering.value = false
     }
 
 }

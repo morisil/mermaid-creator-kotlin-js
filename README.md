@@ -21,7 +21,17 @@ A Kotlin JS library for creating Mermaid diagrams
 
 ## Why?
 
-TODO: Add the rationale behind this project
+My friend made:
+
+https://github.com/JaremaPiekutowski/mermaid-creator
+
+I wanted to check if our new:
+
+https://github.com/xemantic/xemantic-kotlin-js
+
+Can handle the same logic in Kotlin JS without disturbance.
+
+There are still things to be polished in View/ViewModel separation, but 
 
 ## Usage
 

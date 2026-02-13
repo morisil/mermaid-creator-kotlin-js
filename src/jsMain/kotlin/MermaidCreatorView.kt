@@ -18,13 +18,10 @@ package com.xemantic.mermaid.creator
 
 import com.xemantic.kotlin.js.dom.NodeBuilder
 import com.xemantic.kotlin.js.dom.html.*
-import com.xemantic.kotlin.js.dom.invoke
 import com.xemantic.kotlin.js.dom.node
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.dom.clear
-import org.w3c.dom.HTMLInputElement
 import org.w3c.files.FileReader
 import org.w3c.files.get
 
@@ -40,6 +37,7 @@ import org.w3c.files.get
 fun mermaidCreatorView(
     viewModel: MermaidViewModel
 ) = node { div("mermaid-creator-app") {
+
     header("app-header") {
         h1 { +"Mermaid Creator" }
         div("export-buttons") {
@@ -49,47 +47,42 @@ fun mermaidCreatorView(
                 it.onclick = { fileInput.click() }
             }
 
-            val exportSvgButton = input(
-                type = "button",
-                value = "Export SVG"
-            ) {
+            input(type = "button", value = "Export SVG") {
                 it.disabled = true
                 it.onclick = { viewModel.exportSvg() }
+                viewModel.exportSvgEnabled.onEach { enabled ->
+                    it.disabled = !enabled
+                }.launchIn(viewModel.scope)
             }
 
-            val exportPngButton = input(
-                type = "button",
-                value = "Export PNG"
-            ) {
+            input(type = "button", value = "Export PNG") {
                 it.disabled = true
                 it.onclick = { viewModel.exportPng() }
+                viewModel.exportPngEnabled.onEach { enabled ->
+                    it.disabled = !enabled
+                }.launchIn(viewModel.scope)
+                viewModel.exportPngLabel.onEach { label ->
+                    it.value = label
+                }.launchIn(viewModel.scope)
             }
 
-            // Save .mmd button
-            val saveMmdButton: HTMLInputElement = input(
+            input(
                 type = "button",
                 value = "Save .mmd",
                 klass = "secondary"
             ) {
                 it.disabled = true
                 it.onclick = { viewModel.saveMmd() }
+                viewModel.saveMmdEnabled.onEach { enabled ->
+                    it.disabled = !enabled
+                }.launchIn(viewModel.scope)
             }
 
-            // Clear button
             input(type = "button", value = "Clear") {
                 it.onclick = {
                     viewModel.clear()
                 }
             }
-
-            // Update button states based on diagram and export state
-            viewModel.diagram.combine(viewModel.isExportingPng) { diagram, exporting ->
-                val hasValidDiagram = diagram.svgElement != null
-                exportSvgButton.disabled = !hasValidDiagram
-                exportPngButton.disabled = !hasValidDiagram || diagram.isRendering || exporting
-                exportPngButton.value = if (exporting) "Exporting..." else "Export PNG"
-                saveMmdButton.disabled = diagram.code.isBlank()
-            }.launchIn(viewModel.scope)
 
         }
 
@@ -98,69 +91,35 @@ fun mermaidCreatorView(
     main("app-main") {
         div("editor-panel") {
             h1 { +"Editor" }
-
-            val editor = textarea(
+            textarea(
                 klass = "mermaid-editor",
                 placeholder = "Enter Mermaid diagram code here..."
-            ) { textarea ->
-                textarea.oninput = {
-                    viewModel.updateCode(textarea.value)
+            ) { editor ->
+                editor.oninput = {
+                    viewModel.updateCode(editor.value)
                 }
+                viewModel.code.onEach { code ->
+                    if (editor.value != code) {
+                        editor.value = code
+                    }
+                }.launchIn(viewModel.scope)
             }
-
-            // Bind ViewModel diagram code to editor
-            // Guard against unnecessary updates to prevent cursor jumps
-            viewModel.diagram.onEach { diagram ->
-                if (editor.value != diagram.code) {
-                    editor.value = diagram.code
-                }
-            }.launchIn(viewModel.scope)
-
         }
-
         div("preview-panel") {
             h1 { +"Preview" }
-
-            val preview = div("mermaid-preview")
-
-            // Bind ViewModel diagram state to preview
-            viewModel.diagram.onEach { diagram ->
-
-                preview.clear()
-
-                when {
-                    diagram.isRendering -> {
-                        preview {
-                            +"Rendering diagram..."
+            div("mermaid-preview") {
+                viewModel.previewState.onEach { state ->
+                    it.clear()
+                    when (state) {
+                        is Message -> +state.text
+                        is Diagram -> +state.svgElement
+                        is PreviewState.Error -> div("error-message") {
+                            +"Error: ${state.message}"
                         }
                     }
-
-                    diagram.error != null -> {
-                        preview {
-                            div("error-message") {
-                                +"Error: ${diagram.error}"
-                            }
-                        }
-                    }
-
-                    diagram.svgElement != null -> {
-                        val clonedSvg = diagram.svgElement.cloneNode(deep = true)
-                        preview {
-                            +clonedSvg
-                        }
-                    }
-
-                    diagram.code.isBlank() -> {
-                        preview {
-                            +"No diagram to display"
-                        }
-                    }
-
-                }
-            }.launchIn(viewModel.scope)
-
+                }.launchIn(viewModel.scope)
+            }
         }
-
     }
 
 }}
