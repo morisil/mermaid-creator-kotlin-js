@@ -169,7 +169,7 @@ class MermaidViewModel(
 
         try {
             val id = "mermaid-${Date.now().toLong()}"
-            val result = mermaid.render(id, currentCode).await()
+            val result = mermaid.suspendRender(id, currentCode)
 
             val parser = DOMParser()
             val svgDoc = parser.parseFromString(result.svg, "image/svg+xml")

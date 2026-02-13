@@ -16,6 +16,7 @@
 
 package com.xemantic.mermaid.creator
 
+import kotlinx.coroutines.await
 import kotlin.js.Promise
 
 /**
@@ -40,6 +41,8 @@ external interface Mermaid {
     fun initialize(config: dynamic)
     fun render(id: String, code: String): Promise<RenderResult>
 }
+
+suspend fun Mermaid.suspendRender(id: String, code: String): RenderResult = render(id, code).await()
 
 /**
  * Result of Mermaid rendering.
