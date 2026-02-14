@@ -68,11 +68,7 @@ fun mermaidCreatorView(
                 }.launchIn(viewModel.scope)
             }
 
-            input(
-                type = "button",
-                value = "Save .mmd",
-                klass = "secondary"
-            ) {
+            input("secondary", type = "button", value = "Save .mmd") {
                 it.disabled = true
                 onClick { viewModel.saveMmd() }
                 viewModel.saveMmdEnabled.onEach { enabled ->
@@ -92,7 +88,7 @@ fun mermaidCreatorView(
         div("editor-panel") {
             h1 { +"Editor" }
             textarea(
-                klass = "mermaid-editor",
+                "mermaid-editor",
                 placeholder = "Enter Mermaid diagram code here..."
             ) { editor ->
                 onInput { viewModel.updateCode(editor.value) }
