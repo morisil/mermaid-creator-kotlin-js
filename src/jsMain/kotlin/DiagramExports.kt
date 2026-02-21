@@ -46,11 +46,11 @@ private const val PNG_SCALE = 2
 private fun triggerDownload(blob: Blob, filename: String) {
     val url = URL.createObjectURL(blob)
     try {
-        node { a {
+        node.a {
             it.href = url
             it.download = filename
             it.click()
-        }}
+        }
     } finally {
         URL.revokeObjectURL(url)
     }

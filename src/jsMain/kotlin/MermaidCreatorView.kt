@@ -17,6 +17,8 @@
 package com.xemantic.mermaid.creator
 
 import com.xemantic.kotlin.js.dom.NodeBuilder
+import com.xemantic.kotlin.js.dom.event.onClick
+import com.xemantic.kotlin.js.dom.event.onInput
 import com.xemantic.kotlin.js.dom.html.*
 import com.xemantic.kotlin.js.dom.node
 import kotlinx.coroutines.flow.launchIn
@@ -36,7 +38,7 @@ import org.w3c.files.get
  */
 fun mermaidCreatorView(
     viewModel: MermaidViewModel
-) = node { div("mermaid-creator-app") {
+) = node.div("mermaid-creator-app") {
 
     header("app-header") {
         h1 { +"Mermaid Creator" }
@@ -44,12 +46,12 @@ fun mermaidCreatorView(
 
             val fileInput = fileInput(viewModel) // (hidden)
             input(type = "button", value = "Load File") {
-                it.onclick = { fileInput.click() }
+                onClick { fileInput.click() }
             }
 
             input(type = "button", value = "Export SVG") {
                 it.disabled = true
-                it.onclick = { viewModel.exportSvg() }
+                onClick { viewModel.exportSvg() }
                 viewModel.exportSvgEnabled.onEach { enabled ->
                     it.disabled = !enabled
                 }.launchIn(viewModel.scope)
@@ -57,7 +59,7 @@ fun mermaidCreatorView(
 
             input(type = "button", value = "Export PNG") {
                 it.disabled = true
-                it.onclick = { viewModel.exportPng() }
+                onClick { viewModel.exportPng() }
                 viewModel.exportPngEnabled.onEach { enabled ->
                     it.disabled = !enabled
                 }.launchIn(viewModel.scope)
@@ -72,16 +74,14 @@ fun mermaidCreatorView(
                 klass = "secondary"
             ) {
                 it.disabled = true
-                it.onclick = { viewModel.saveMmd() }
+                onClick { viewModel.saveMmd() }
                 viewModel.saveMmdEnabled.onEach { enabled ->
                     it.disabled = !enabled
                 }.launchIn(viewModel.scope)
             }
 
             input(type = "button", value = "Clear") {
-                it.onclick = {
-                    viewModel.clear()
-                }
+                onClick { viewModel.clear() }
             }
 
         }
@@ -95,9 +95,7 @@ fun mermaidCreatorView(
                 klass = "mermaid-editor",
                 placeholder = "Enter Mermaid diagram code here..."
             ) { editor ->
-                editor.oninput = {
-                    viewModel.updateCode(editor.value)
-                }
+                onInput { viewModel.updateCode(editor.value) }
                 viewModel.code.onEach { code ->
                     if (editor.value != code) {
                         editor.value = code
@@ -122,7 +120,7 @@ fun mermaidCreatorView(
         }
     }
 
-}}
+}
 
 fun NodeBuilder.fileInput(viewModel: MermaidViewModel) = input(
     type = "file"
