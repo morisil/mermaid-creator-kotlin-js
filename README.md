@@ -29,16 +29,6 @@ I wanted to check if our new:
 
 https://github.com/xemantic/xemantic-kotlin-js
 
-Can handle the same logic in Kotlin JS without disturbance.
+Can handle the same logic in Kotlin JS without much disturbance. In particular I wanted to see how applied MVVM will stack against react patterns in a small and isolated app.
 
-There are still things to be polished in View/ViewModel separation, but 
 
-## Usage
-
-In `build.gradle.kts` add:
-
-```kotlin
-dependencies {
-    implementation("com.xemantic.mermaid:mermaid-creator-kotlin-js:0.1.0")
-}
-```
